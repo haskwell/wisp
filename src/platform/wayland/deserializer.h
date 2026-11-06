@@ -5,6 +5,8 @@
 #include <vector>
 #include <stdexcept>
 #include <concepts>
+#include <type_traits>
+#include <bit>
 
 class MessageDeserializer{
     std::span<const uint8_t> buffer;
@@ -12,7 +14,7 @@ class MessageDeserializer{
 
     public:
 
-    void bytesExist(std::size_t bytes) const{
+    void bytesExist(const std::size_t bytes) const{
         if((cursorPosition <= buffer.size()) && (bytes <= (buffer.size() - cursorPosition))){
             return;
         }
@@ -22,7 +24,7 @@ class MessageDeserializer{
     }
 
     template <std::unsigned_integral T>
-    T readBytes(std::size_t bytes){
+    T readBytesUnsigned(std::size_t bytes){
         T res{};
         std::size_t shift = 0;
         std::size_t currentPos = cursorPosition;
@@ -32,35 +34,55 @@ class MessageDeserializer{
         return res;
     }
 
+    template <std::signed_integral T>
+    T readBytesSigned(std::size_t bytes){
+        T res{};
+        std::make_unsigned_t<T> raw{};
+        using U = std::make_unsigned_t<T>;
+        std::size_t shift = 0;
+        std::size_t currentPos = cursorPosition;
+        for(; cursorPosition < currentPos + bytes; cursorPosition++, shift++){
+            raw += (static_cast<U>(buffer[cursorPosition]) << (shift * 8));
+        }
+        res = std::bit_cast<T>(raw);
+        return res;
+    }
+
     MessageDeserializer(std::span<const uint8_t> b){
         buffer = b;
     }
 
     template <std::unsigned_integral T>
-    T readInteger(){
+    T readUnsignedInteger(){
         bytesExist(sizeof(T));
-        return readBytes<T>(sizeof(T));
+        return readBytesUnsigned<T>(sizeof(T));
+    }
+
+    template <std::signed_integral T>
+    T readSignedInteger(){
+        bytesExist(sizeof(T));
+        return readBytesSigned<T>(sizeof(T));
     }
 
     uint32_t readObjectID(){
         bytesExist(4);
-        return readBytes<uint32_t>(4);
+        return readBytesUnsigned<uint32_t>(4);
     }
 
     uint16_t readMessageLength(){
         bytesExist(2);
-        return readBytes<uint16_t>(2);
+        return readBytesUnsigned<uint16_t>(2);
     }
 
     uint16_t readOpcode(){
         bytesExist(2);
-        return readBytes<uint16_t>(2);
+        return readBytesUnsigned<uint16_t>(2);
     }
 
     std::string readString(){
         uint32_t strLen{};
         bytesExist(4);
-        strLen = readBytes<uint32_t>(4);
+        strLen = readBytesUnsigned<uint32_t>(4);
         std::string str{};
         if (strLen == 0) {
             throw std::runtime_error("invalid string");
@@ -83,7 +105,7 @@ class MessageDeserializer{
     std::vector<uint8_t> readArray(){
         uint32_t arrLen{};
         bytesExist(4);
-        arrLen = readBytes<uint32_t>(4);
+        arrLen = readBytesUnsigned<uint32_t>(4);
         std::size_t bytesToRead = arrLen;
         bytesExist(bytesToRead);
         std::size_t currentPos = cursorPosition;

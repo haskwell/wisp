@@ -19,12 +19,23 @@ class MessageSerializer{
         insertMessageLength();
     }
 
-    template <typename T>
+    template <std::unsigned_integral T>
     void append_uint(T var){
         for(std::size_t i = 0; i < sizeof(T); i++){
             uint8_t extractedValue = var;
             buffer.push_back(extractedValue);
             var = var >> 8;
+        }
+    }
+
+    template <std::signed_integral T>
+    void append_int(T var){
+        using U = std::make_unsigned_t<T>;
+        U raw = var;
+        for(std::size_t i = 0; i < sizeof(T); i++){
+            uint8_t extractedValue = raw;
+            buffer.push_back(extractedValue);
+            raw = raw >> 8;
         }
     }
 
