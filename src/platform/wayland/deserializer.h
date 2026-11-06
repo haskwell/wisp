@@ -64,6 +64,12 @@ class MessageDeserializer{
         return readBytesSigned<T>(sizeof(T));
     }
 
+    float readFixed(){
+        bytesExist(4);
+        int32_t res = readSignedInteger<int32_t>();
+        return res/256.f;
+    }
+
     uint32_t readObjectID(){
         bytesExist(4);
         return readBytesUnsigned<uint32_t>(4);

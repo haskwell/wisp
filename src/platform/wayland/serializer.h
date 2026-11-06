@@ -39,6 +39,10 @@ class MessageSerializer{
         }
     }
 
+    void appendFixed(float var){
+        append_int<int32_t>(var * 256);
+    }
+
     void insertMessageLength(){
         uint16_t length = buffer.size();
         //write in buffer[6] and buffer[7]
