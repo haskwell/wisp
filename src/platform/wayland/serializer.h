@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <span>
+#include <stdexcept>
 class MessageSerializer{
     std::vector<uint8_t> buffer;
     public:

@@ -1,29 +1,71 @@
+
 #include <iostream>
-#include <iomanip>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <system_error>
+#include <cerrno>
+#include <cstring>
 #include "platform/wayland/connection.h"
-#include "platform/wayland/serializer.h"
-#include "platform/wayland/deserializer.h"
-int main(){
-    Connection c;
-    MessageSerializer s;
-    s.beginMessage(1, 0);
-    s.append_uint(uint32_t{2});
-    s.finishMessage();
 
-    c.sendMessage(s.getMessage());
+int main() {
+    int sockets[2];
 
-    std::vector<uint8_t> res = c.receiveMessage();
+    if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sockets) == -1)
+        throw std::system_error(errno, std::generic_category(), "socketpair");
 
-    std::span<uint8_t> res1 = res;
+    Connection sender(sockets[0]);
+    Connection receiver(sockets[1]);
 
-    MessageDeserializer d(res1);
+    int pipefd[2];
 
-    uint32_t objectID = d.readObjectID();
-    uint16_t opcode = d.readOpcode();
-    uint16_t messageLen = d.readMessageLength();
-    uint32_t timestamp = d.readInteger<uint32_t>();
+    if (pipe2(pipefd, O_CLOEXEC) == -1)
+        throw std::system_error(errno, std::generic_category(), "pipe2");
 
-    std::cout << objectID << '\n' << opcode << '\n' << messageLen << '\n' << timestamp << '\n';
+    // Send a valid 8-byte Wayland-style message and one FD.
+    std::vector<uint8_t> message{
+        1, 0, 0, 0,  // object ID = 1
+        0, 0,        // opcode = 0
+        8, 0         // message length = 8
+    };
+
+    std::span<const int> fds(&pipefd[1], 1);
+
+    sender.sendMessage(message, fds);
+
+    auto received = receiver.receiveMessage();
+
+    std::cout << "Message size: " << received.message.size() << '\n';
+    std::cout << "Received FDs: " << received.fds.size() << '\n';
+
+    if (received.message != message || received.fds.size() != 1)
+        throw std::runtime_error("Transport test failed");
+
+    // Write through the received FD.
+    const char testByte = 'Z';
+
+    if (write(received.fds[0], &testByte, 1) != 1)
+        throw std::system_error(errno, std::generic_category(), "write");
+
+    // Read through the original pipe read end.
+    char result{};
+
+    if (read(pipefd[0], &result, 1) != 1)
+        throw std::system_error(errno, std::generic_category(), "read");
+
+    std::cout << "Pipe received: " << result << '\n';
+
+    if (result != 'Z')
+        throw std::runtime_error("FD transfer failed");
+
+    std::cout << "FD TRANSFER SUCCESS!\n";
+
+    // Close received and original descriptors.
+    for (int fd : received.fds)
+        close(fd);
+
+    close(pipefd[0]);
+    close(pipefd[1]);
 
     return 0;
 }
