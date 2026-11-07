@@ -6,7 +6,7 @@
 #include <system_error>
 #include <cerrno>
 #include <cstring>
-#include "platform/wayland/connection.h"
+#include "platform/wayland/connection.hpp"
 
 int main() {
     int sockets[2];

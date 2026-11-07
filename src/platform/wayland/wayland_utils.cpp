@@ -1,5 +1,6 @@
-#pragma once
+#include "wayland_utils.hpp"
 #include <string>
+#include <cstdlib>
 #include <stdexcept>
 std::string get_path() {
     const char* display = std::getenv("WAYLAND_DISPLAY");

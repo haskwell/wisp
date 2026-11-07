@@ -11,6 +11,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-add_executable(main ${SOURCES}
-  src/platform/wayland/helper.h)
+add_executable(main ${SOURCES})
+
 target_include_directories(main PRIVATE src)
