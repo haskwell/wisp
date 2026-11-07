@@ -16,6 +16,13 @@ MessageDeserializer::MessageDeserializer(std::span<const uint8_t> b){
     buffer = b;
 }
 
+MessageDeserializer::MessageDeserializer(){}
+
+void MessageDeserializer::startDeserializer(std::span<const uint8_t> b){
+    buffer = b;
+    cursorPosition = 0;
+}
+
 float MessageDeserializer::readFixed(){
     bytesExist(4);
     int32_t res = readSignedInteger<int32_t>();

@@ -42,6 +42,10 @@ class MessageDeserializer{
 
     MessageDeserializer(std::span<const uint8_t> b);
 
+    MessageDeserializer();
+
+    void startDeserializer(std::span<const uint8_t> b);
+
     template <std::unsigned_integral T>
     T readUnsignedInteger(){
         bytesExist(sizeof(T));

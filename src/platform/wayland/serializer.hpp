@@ -14,6 +14,13 @@ class MessageSerializer{
     
     void beginMessage(uint32_t objectID, uint16_t opcode);
 
+    template <typename T>
+    void beginMessage(uint32_t objectID, T opcode){
+        static_assert(std::is_enum_v<T>);
+        uint16_t op = static_cast<uint16_t>(opcode);
+        beginMessage(objectID, op);
+    }
+
     void finishMessage();
 
     template <std::unsigned_integral T>
