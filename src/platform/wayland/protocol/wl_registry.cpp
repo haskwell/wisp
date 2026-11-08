@@ -20,6 +20,6 @@ void Registry::handleEvent(uint16_t opcode, MessageDeserializer& d) {
     }
 }
 
-std::vector<Global> Registry::getGlobals(){
+const std::vector<Global>& Registry::getGlobals() const{
     return globals;
 }

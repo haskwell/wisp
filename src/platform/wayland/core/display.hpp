@@ -4,32 +4,44 @@
 #include "../wire/deserializer.hpp"
 #include "object_manager.hpp"
 #include "../protocol/wl_display.hpp"
+#include <memory>
 
 class Display{
-        public:
-    
+    public:
+    bool running = true;
     Connection connection;
     MessageDeserializer deserializer;
     MessageSerializer serializer;
     ObjectManager objectManager;
 
     WlDisplay wldisplay{*this};
+    std::unique_ptr<Registry> registry;
     Display();
     template <typename Opcode, typename... Args>
-    void sendRequest(uint32_t objectId, Opcode opcode, Args&... args){
+    void sendRequest(uint32_t objectId, Opcode opcode, const Args&... args){
+        sendRequestWithFds(objectId, opcode, std::span<const int>{}, args...);
+    }
+
+    template <typename Opcode, typename... Args>
+    void sendRequestWithFds(uint32_t objectId, Opcode opcode, std::span<const int> fds, const Args&... args){
         serializer.beginMessage(objectId, opcode);
         (appendArg(args),...);
         serializer.finishMessage();
-        send();
+        send(fds);
     }
 
-    void send();
+    void send(std::span<const int> fds = {});
     void dispatch();
     void roundTrip();
 
-    std::unique_ptr<Registry> getRegistry();
+    Registry& getRegistry();
 
     void appendArg(uint32_t a);
     void appendArg(int32_t a);
     void appendArg(std::string a);
+
+    void run();
+    void stop();
+
+    ~Display();
 };

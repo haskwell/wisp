@@ -1,8 +1,10 @@
 #pragma once
 #include "../core/proxy.hpp"
-
-class SHM : public Proxy {
+#include <memory>
+class ShmPool;
+class Shm : public Proxy {
     public:
-    SHM(Display& d) : Proxy(d) {}
+    Shm(Display& d) : Proxy(d) {}
     void handleEvent(uint16_t opcode, MessageDeserializer& d) override{}
+    std::unique_ptr<ShmPool> createShmPool(uint32_t size, int fd);
 };

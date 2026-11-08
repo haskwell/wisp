@@ -17,7 +17,7 @@ class Registry : public Proxy {
     Registry(Display& d) : Proxy(d) {}
     const Global* findGlobal(std::string interface);
     void handleEvent(uint16_t opcode, MessageDeserializer& d) override;
-    std::vector<Global> getGlobals();
+    const std::vector<Global>& getGlobals() const;
 
     template <typename T>
     std::unique_ptr<T> bind(std::string interface){

@@ -5,10 +5,12 @@
 
 Display::Display(){
     objectManager.registerAt(1, &wldisplay);
+    registry = wldisplay.getRegistry();
+    //roundTrip();
 }
 
-void Display::send(){
-    connection.sendMessage(serializer.getMessage());
+void Display::send(std::span<const int> fds){
+    connection.sendMessage(serializer.getMessage(), fds);
 }
 
 void Display::dispatch(){
@@ -42,6 +44,18 @@ void Display::appendArg(std::string a){
     serializer.appendString(a);
 }
 
-std::unique_ptr<Registry> Display::getRegistry() {
-    return wldisplay.getRegistry();
+Registry& Display::getRegistry() {
+    return *registry;
 }
+
+void Display::run(){
+    while(running){
+        dispatch();
+    }
+}
+
+void Display::stop() {
+    running = false;
+}
+
+Display::~Display() = default;
