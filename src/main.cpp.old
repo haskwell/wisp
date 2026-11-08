@@ -1,8 +1,5 @@
-#include "../serializer.hpp"
-#include "../connection.hpp"
-#include "registry.hpp"
-#include "opcodes.hpp"
-#include "../object_id_manager.hpp"
+#include "platform/wayland/protocol/opcodes.hpp"
+#include "platform/wayland/display.hpp"
 #include <iostream>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -36,10 +33,9 @@ const Global* findGlobal(std::vector<Global>& globals, std::string interface){
     return nullptr;
 }
 
-Registry::Registry(Connection &c) : connection(c){}
-
-void Registry::getRegistry(){
-
+int main() {
+    Display display;
+    
     //wl display get resigtry (make registry object)
     serializer.beginMessage(1, wl_display::Request::GET_REGISTRY);
     serializer.append_uint<uint32_t>(REGISTRY_ID);
@@ -63,7 +59,7 @@ void Registry::getRegistry(){
         uint16_t code = deserializer.readOpcode();
         uint16_t len = deserializer.readMessageLength();
         if(id == DISPLAY_ID && code == static_cast<uint16_t>(wl_display::Event::ERROR)){
-            return;
+            return 1;
         }
         if(id == CALLBACK_ID && code == static_cast<uint16_t>(wl_callback::Event::DONE)) break;
         //name
@@ -83,7 +79,7 @@ void Registry::getRegistry(){
 
     const Global* zxdgmanager = findGlobal(globals, "zxdg_decoration_manager_v1");
 
-    if(compositor == nullptr || shm == nullptr || xdgbase == nullptr) return;
+    if(compositor == nullptr || shm == nullptr || xdgbase == nullptr) return 1;
     serializer.beginMessage(REGISTRY_ID, wl_registry::Request::BIND);
     serializer.append_uint(compositor->name);
     serializer.appendString(compositor->interface);
@@ -283,4 +279,5 @@ void Registry::getRegistry(){
     }
     munmap(shm_data, size);
     close(bufferFd);
+    return 0;
 }

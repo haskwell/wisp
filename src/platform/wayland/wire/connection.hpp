@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <cstddef>
+#include <string>
 
 struct RecievedMessage{
     std::vector<uint8_t> message;
