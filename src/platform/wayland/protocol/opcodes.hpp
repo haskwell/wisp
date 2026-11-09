@@ -162,3 +162,68 @@ namespace wl_buffer {
         DESTROY = 0,
     };
 }
+
+namespace wl_seat {
+    enum class Event : uint16_t {
+        CAPABILITIES = 0,
+        NAME = 1,
+    };
+
+    enum class Request : uint16_t {
+        GET_POINTER = 0,
+        GET_KEYBOARD = 1,
+        GET_TOUCH = 2,
+        RELEASE = 3,
+    };
+
+    enum Capability : uint32_t {
+        POINTER = 1,
+        KEYBOARD = 2,
+        TOUCH = 4
+    };
+}
+
+namespace wl_pointer {
+    enum class Event : uint16_t {
+        ENTER = 0,
+        LEAVE = 1,
+        MOTION = 2,
+        BUTTON = 3,
+        AXIS = 4,
+        FRAME = 5,
+        AXIS_SOURCE = 6,
+        AXIS_STOP = 7,
+        AXIS_DISCRETE = 8,
+        AXIS_VALUE120 = 9,
+        AXIS_RELATIVE_DIRECTION = 10
+    };
+
+    enum class Request : uint16_t {
+        SET_CURSOR = 0,
+        RELEASE = 1
+    };
+    enum class Axis : uint32_t {
+        VERTICAL_SCROLL = 0,
+        HORIZONTAL_SCROLL = 1
+    };
+}
+
+namespace wl_keyboard {
+    enum class Event : uint16_t {
+        KEYMAP = 0,
+        ENTER = 1,
+        LEAVE = 2,
+        KEY = 3,
+        MODIFIERS = 4,
+        REPEAT_INFO = 5
+    };
+
+    enum class Request : uint16_t {
+        RELEASE = 0
+    };
+
+    enum class KeyState : uint32_t {
+        RELEASED = 0,
+        PRESSED = 1
+    };
+}

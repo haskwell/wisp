@@ -2,6 +2,7 @@
 #include "../protocol/wl_shm.hpp"
 #include "../protocol/xdg_wm_base.hpp"
 #include "../protocol/zxdg_decoration_manager.hpp"
+#include "platform/wayland/protocol/wl_seat.hpp"
 class Registry;
 class Display;
 #include <memory>
@@ -10,7 +11,7 @@ class Globals{
     std::unique_ptr<Shm> shm;
     std::unique_ptr<XdgBase> xdgBase;
     std::unique_ptr<ZxdgDecorManager> zxdgDecorManager;
-
+    std::unique_ptr<Seat> seat;
     Display& display;
     public:
     Globals(Display& display);

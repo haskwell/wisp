@@ -83,3 +83,30 @@ std::vector<uint8_t> MessageDeserializer::readArray(){
     cursorPosition += padding;
     return arr;
 }
+
+std::vector<uint32_t> MessageDeserializer::readArray32bit() {
+    uint32_t arrLen{};
+    bytesExist(4);
+    arrLen = readBytesUnsigned<uint32_t>(4);
+    std::size_t bytesToRead = arrLen;
+    bytesExist(bytesToRead);
+    std::size_t currentPos = cursorPosition;
+    std::vector<uint8_t> arr(bytesToRead);
+    for(std::size_t i = 0;cursorPosition < currentPos + bytesToRead;i++, cursorPosition++){
+        arr[i] = buffer[cursorPosition];
+    }
+    std::size_t padding = (4 - (arrLen % 4)) % 4;
+    bytesExist(padding);
+    cursorPosition += padding;
+
+    std::vector<uint32_t> res;
+    for (size_t i = 0; i < arr.size(); i += 4) {
+        uint32_t element =
+            static_cast<uint32_t>(arr[i]) |
+                static_cast<uint32_t>(arr[i + 1]) << 8 |
+                    static_cast<uint32_t>(arr[i + 2]) << 16 |
+                        static_cast<uint32_t>(arr[i + 3]) << 24;
+        res.push_back(element);
+    }
+    return res;
+}

@@ -77,8 +77,8 @@ void Window::render() {
     frameColor = nextColor ? 0xFF3366CC : 0xFFCC6633;
     nextColor = !nextColor;
 
-    std::cout << "Rendering frame " << frameCount
-              << " using buffer " << bufferIndex << '\n';
+    //std::cout << "Rendering frame " << frameCount
+    //          << " using buffer " << bufferIndex << '\n';
 
     frameCount++;
     present(bufferIndex);

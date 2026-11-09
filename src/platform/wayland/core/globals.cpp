@@ -9,6 +9,7 @@ Globals::Globals(Display& d) : display(d){
     shm = registry.bind<Shm>("wl_shm", 1);
     xdgBase = registry.bind<XdgBase>("xdg_wm_base", 1);
     zxdgDecorManager = registry.bind<ZxdgDecorManager>("zxdg_decoration_manager_v1", 1, false);
+    seat = registry.bind<Seat>("wl_seat", 7);
 }
 
 Compositor& Globals::getCompositor() {

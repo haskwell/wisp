@@ -69,4 +69,6 @@ class MessageDeserializer{
     std::string readString();
 
     std::vector<uint8_t> readArray();
+
+    std::vector<uint32_t> readArray32bit();
 };

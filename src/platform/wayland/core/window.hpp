@@ -8,7 +8,6 @@
 class Display;
 class Globals;
 class Window {
-private:
     Display& display;
     Globals& globals;
     uint32_t frameColor = 0xFF3366CC;
