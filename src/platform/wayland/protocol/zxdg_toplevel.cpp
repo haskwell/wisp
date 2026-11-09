@@ -8,6 +8,10 @@ void ZxdgTopLevel::setModeServer(){
 
 void ZxdgTopLevel::handleEvent(uint16_t opcode, MessageDeserializer& d) {
     if(opcode == static_cast<uint16_t>(zxdg_toplevel_decoration_v1::Event::CONFIGURE)){
-        uint32_t mode = d.readUnsignedInteger<uint32_t>();
+        d.readUnsignedInteger<uint32_t>();
     }
+}
+
+void ZxdgTopLevel::destroy() {
+    display.sendRequest(objectId, zxdg_toplevel_decoration_v1::Request::DESTROY);
 }

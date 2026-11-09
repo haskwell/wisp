@@ -14,4 +14,5 @@ file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(wisp ${SOURCES})
 
 target_include_directories(wisp PRIVATE src)
-target_compile_options(wisp PRIVATE -Wall -Wextra)
+target_compile_options(wisp PRIVATE -Wall -Wextra -fsanitize=address,undefined)
+target_link_options(wisp PRIVATE -fsanitize=address,undefined)
