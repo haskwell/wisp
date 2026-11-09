@@ -18,5 +18,5 @@ class Globals{
     Compositor& getCompositor();
     Shm& getSHM();
     XdgBase& getXdgBase();
-    ZxdgDecorManager& getDecorationManager();
+    ZxdgDecorManager* getDecorationManager();
 };

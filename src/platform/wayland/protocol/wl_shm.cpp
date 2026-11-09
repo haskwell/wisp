@@ -4,10 +4,9 @@
 #include "opcodes.hpp"
 
 std::unique_ptr<ShmPool> Shm::createShmPool(uint32_t size, int fd){
-    auto s = std::make_unique<ShmPool>(display);
-    uint32_t id = display.objectManager.registerProxy(s.get());
+    auto s = display.registerProxy<ShmPool>();
     std::vector<int> fds;
     fds.push_back(fd);
-    display.sendRequestWithFds(objectId, wl_shm::Request::CREATE_POOL,  fds, id, size);
+    display.sendRequestWithFds(objectId, wl_shm::Request::CREATE_POOL,  fds, s->objectId, size);
     return s;
 }

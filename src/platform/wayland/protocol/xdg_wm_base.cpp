@@ -4,9 +4,8 @@
 #include "opcodes.hpp"
 
 std::unique_ptr<XdgSurface> XdgBase::getXdgSurface(uint32_t surfaceId){
-    auto s = std::make_unique<XdgSurface>(display);
-    uint32_t id = display.objectManager.registerProxy(s.get());
-    display.sendRequest(objectId, xdg_wm_base::Request::GET_XDG_SURFACE, id, surfaceId);
+    auto s = display.registerProxy<XdgSurface>();
+    display.sendRequest(objectId, xdg_wm_base::Request::GET_XDG_SURFACE, s->objectId, surfaceId);
     return s;
 }
 

@@ -5,19 +5,21 @@
 
 class ShmBuffer{
     int fd{-1};
-    void* data;
+    void* data{nullptr};
     Shm& shm;
     int32_t width;
     int32_t height;
     uint32_t stride;
     uint32_t size;
-
+    const size_t bufferCount{2};
     std::unique_ptr<ShmPool> pool;
-    std::unique_ptr<Buffer> buffer;
+    std::vector<std::unique_ptr<Buffer>> buffers;
 public:
     ShmBuffer(Shm& shm, uint32_t width, uint32_t height);
     void initialize();
-    Buffer& getBuffer();
-    uint32_t* getPixels();
+    Buffer& getBuffer(int i) const;
+    uint32_t* getPixels(int index) const;
+    bool anyBusy();
+    int acquireFreeBuffer();
     ~ShmBuffer();
 };

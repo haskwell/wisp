@@ -17,29 +17,53 @@ void ShmBuffer::initialize(){
     if(fd < 0){
         throw std::runtime_error("shm creation failed");
     }
-
-    int stride = width * 4;
-    uint32_t size = width * height * 4;
+    buffers.reserve(bufferCount);
+    stride = width * 4;
+    size = width * height * 4 * bufferCount;
     ftruncate(fd, size);
 
-    void* shm_data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-
-    uint32_t* pixels = static_cast<uint32_t*>(shm_data);
-    for(size_t i = 0; i < static_cast<size_t>(width) * height; i++){
-        pixels[i] = 0xFF3366CC;
-    }
+    data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 
     pool = shm.createShmPool(size, fd);
-    buffer = pool->createBuffer(width, height, stride);
+    int32_t offset = 0;
+    for (size_t i = 0; i < bufferCount; i++) {
+        offset = i * stride * height;
+        buffers.push_back(pool->createBuffer(width, height, stride, offset));
+    }
+    pool->destroy();
+    pool.reset();
 }
 
-Buffer& ShmBuffer::getBuffer(){
-    return *buffer;
+Buffer& ShmBuffer::getBuffer(int i) const{
+    return *(buffers[i]);
 }
 
-uint32_t* getPixels();
+uint32_t* ShmBuffer::getPixels(int index) const {
+    auto* base = static_cast<uint8_t*>(data);
+    size_t offset = static_cast<size_t>(index) * stride * static_cast<size_t>(height);
+    return reinterpret_cast<uint32_t*>(base + offset);
+}
+
+bool ShmBuffer::anyBusy() {
+    for (size_t i = 0; i < buffers.size(); i++) {
+        if (buffers[i]->busy) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int ShmBuffer::acquireFreeBuffer() {
+    for (size_t i = 0; i < bufferCount; i++) {
+        if (!buffers[i]->busy) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 ShmBuffer::~ShmBuffer(){
-    munmap(data, size);
-    close(fd);
+    for (auto& b : buffers) b->destroy();
+    if (data) munmap(data, size);
+    if (fd >= 0) close(fd);
 }

@@ -7,13 +7,12 @@
 #include <memory>
 
 class Display{
-    public:
-    bool running = true;
     Connection connection;
     MessageDeserializer deserializer;
     MessageSerializer serializer;
     ObjectManager objectManager;
-
+public:
+    bool running = true;
     WlDisplay wldisplay{*this};
     std::unique_ptr<Registry> registry;
     Display();
@@ -30,6 +29,13 @@ class Display{
         send(fds);
     }
 
+    template <typename T>
+    std::unique_ptr<T> registerProxy(){
+        auto p = std::make_unique<T>(*this);
+        objectManager.registerProxy(p.get());   // sets p->objectId
+        return p;
+    }
+
     void send(std::span<const int> fds = {});
     void dispatch();
     void roundTrip();
@@ -39,6 +45,10 @@ class Display{
     void appendArg(uint32_t a);
     void appendArg(int32_t a);
     void appendArg(std::string a);
+
+    void unregisterProxy(uint32_t id);
+
+    void deleteProxy(uint32_t id);
 
     void run();
     void stop();

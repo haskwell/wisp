@@ -2,7 +2,7 @@
 #include "../protocol/wl_callback.hpp"
 #include "../protocol/opcodes.hpp"
 #include "../protocol/wl_registry.hpp"
-
+#include <unistd.h>
 Display::Display(){
     objectManager.registerAt(1, &wldisplay);
     registry = wldisplay.getRegistry();
@@ -23,6 +23,7 @@ void Display::dispatch(){
     if(p){
         p->handleEvent(opcode, deserializer);
     }
+    for (int fd : res.fds) close(fd);
 }
 
 void Display::roundTrip(){
@@ -44,14 +45,15 @@ void Display::appendArg(std::string a){
     serializer.appendString(a);
 }
 
+void Display::unregisterProxy(uint32_t id){ objectManager.unregisterProxy(id); }
+void Display::deleteProxy(uint32_t id){ objectManager.deleteProxy(id); }
+
 Registry& Display::getRegistry() {
     return *registry;
 }
 
 void Display::run(){
-    while(running){
-        dispatch();
-    }
+    dispatch();
 }
 
 void Display::stop() {

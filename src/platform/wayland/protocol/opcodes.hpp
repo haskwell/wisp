@@ -119,7 +119,7 @@ namespace wl_shm {
     };
 
     enum class Format : uint32_t {
-        ARGG8888 = 0,
+        ARGB8888 = 0,
         XRGB8888 = 1
     };
 }
@@ -150,5 +150,15 @@ namespace zxdg_toplevel_decoration_v1{
     };
     enum class Mode : uint32_t {
         CLIENT_SIDE = 1, SERVER_SIDE = 2
+    };
+}
+
+namespace wl_buffer {
+    enum class Event : uint16_t {
+        RELEASE = 0,
+    };
+
+    enum class Request : uint16_t {
+        DESTROY = 0,
     };
 }

@@ -20,11 +20,17 @@ class Registry : public Proxy {
     const std::vector<Global>& getGlobals() const;
 
     template <typename T>
-    std::unique_ptr<T> bind(std::string interface){
+    std::unique_ptr<T> bind(std::string interface, uint32_t maxVersion, bool required = true){
         const Global* g = findGlobal(interface);
-        auto proxy = std::make_unique<T>(display);
-        uint32_t id = display.objectManager.registerProxy(proxy.get());
-        display.sendRequest(objectId, wl_registry::Request::BIND, g->name, g->interface, g->version, id);
+        if (!g) {
+            if (required) {
+                throw std::runtime_error("compositor does not support global" + interface);
+            }
+            return nullptr;
+        }
+        uint32_t version = std::min(g->version, maxVersion);
+        auto proxy = display.registerProxy<T>();
+        display.sendRequest(objectId, wl_registry::Request::BIND, g->name, g->interface, version, proxy->objectId);
         return proxy;
     }
 };

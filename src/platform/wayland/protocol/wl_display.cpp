@@ -15,20 +15,19 @@ void WlDisplay::handleEvent(uint16_t opcode, MessageDeserializer& d){
                                  " code " + std::to_string(code) + ": " + msg);
     }
     if(opcode == static_cast<uint16_t>(wl_display::Event::DELETE_ID)){
-        //delete object
+        uint32_t id = d.readUnsignedInteger<uint32_t>();
+        display.deleteProxy(id);
     }
 }
 
 std::unique_ptr<Registry> WlDisplay::getRegistry(){
-    auto registry = std::make_unique<Registry>(display);
-    display.objectManager.registerProxy(registry.get());
+    auto registry = display.registerProxy<Registry>();
     display.sendRequest(objectId, wl_display::Request::GET_REGISTRY, registry->objectId);
     return registry;
 }
 
 std::unique_ptr<Callback> WlDisplay::sync(){
-    auto callback = std::make_unique<Callback>(display);
-    display.objectManager.registerProxy(callback.get());
+    auto callback = display.registerProxy<Callback>();
     display.sendRequest(objectId, wl_display::Request::SYNC, callback->objectId);
     return callback;
 }

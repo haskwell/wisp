@@ -3,11 +3,14 @@
 #include "../core/display.hpp"
 #include "opcodes.hpp"
 
-std::unique_ptr<Buffer> ShmPool::createBuffer(int32_t width, int32_t height, int32_t stride){
-    auto s = std::make_unique<Buffer>(display);
-    uint32_t id = display.objectManager.registerProxy(s.get());
-    display.sendRequest(objectId, wl_shm_pool::Request::CREATE_BUFFER, id,
-        static_cast<int32_t>(0), width, height, stride,
-        static_cast<uint32_t>(wl_shm::Format::ARGG8888));
+std::unique_ptr<Buffer> ShmPool::createBuffer(int32_t width, int32_t height, int32_t stride, int32_t offset){
+    auto s = display.registerProxy<Buffer>();
+    display.sendRequest(objectId, wl_shm_pool::Request::CREATE_BUFFER, s->objectId,
+        offset, width, height, stride,
+        static_cast<uint32_t>(wl_shm::Format::ARGB8888));
     return s;
+}
+
+void ShmPool::destroy(){
+    display.sendRequest(objectId, wl_shm_pool::Request::DESTROY);
 }
