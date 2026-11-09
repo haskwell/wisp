@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(MyProject LANGUAGES CXX)
+project(wisp LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,6 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-add_executable(main ${SOURCES})
+add_executable(wisp ${SOURCES})
 
-target_include_directories(main PRIVATE src)
+target_include_directories(wisp PRIVATE src)
+target_compile_options(wisp PRIVATE -Wall -Wextra)
