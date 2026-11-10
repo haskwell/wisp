@@ -35,9 +35,4 @@ void Keyboard::handleEvent(uint16_t opcode, MessageDeserializer& d) {
             pressedKeys.erase(key);
         }
     }
-    std::cout << "Currently pressed: ";
-    for (uint32_t k : pressedKeys) {
-        std::cout << k << " ";
-    }
-    std::cout << '\n';
 }

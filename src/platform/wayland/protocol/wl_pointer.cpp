@@ -1,48 +1,74 @@
 #include "wl_pointer.hpp"
 
-#include <iostream>
-#include <ostream>
-
 #include "opcodes.hpp"
 #include "platform/wayland/core/display.hpp"
-
+#include <utility>
 void Pointer::handleEvent(uint16_t opcode, MessageDeserializer & d) {
     if (opcode == static_cast<uint16_t>(wl_pointer::Event::ENTER)) {
-        serial = d.readUnsignedInteger<uint32_t>();
-        surfaceId = d.readUnsignedInteger<uint32_t>();
-        insideSurface = true;
-        //std::cout << "Surface entered: " << surfaceId << std::endl;
+        Events event{};
+        event.type = EventType::ENTER;
+        event.enter.serial = d.readUnsignedInteger<uint32_t>();
+        event.surfaceID = d.readUnsignedInteger<uint32_t>();
+        event.enter.x = d.readFixed();
+        event.enter.y = d.readFixed();
+
+        currentSurfaceID = event.surfaceID;
+        position.first = event.enter.x;
+        position.second = event.enter.y;
+
+        pendingFrame.push_back(event);
     }
     else if (opcode == static_cast<uint16_t>(wl_pointer::Event::LEAVE)) {
-        surfaceId = 0;
-        insideSurface = false;
+        Events event{};
+        event.type = EventType::LEAVE;
+        event.leave.serial = d.readUnsignedInteger<uint32_t>();
+        event.surfaceID = d.readUnsignedInteger<uint32_t>();
+        pendingFrame.push_back(event);
+        currentSurfaceID = 0;
     }
     else if (opcode == static_cast<uint16_t>(wl_pointer::Event::MOTION)) {
-        d.readUnsignedInteger<uint32_t>();
-        x = d.readFixed();
-        y = d.readFixed();
+        Events event{};
+        event.type = EventType::MOTION;
+        event.timestamp = d.readUnsignedInteger<uint32_t>();
+        event.motion.x = d.readFixed();
+        event.motion.y = d.readFixed();
+        position = {event.motion.x, event.motion.y};
+        event.surfaceID = currentSurfaceID;
+        pendingFrame.push_back(event);
     }
     else if (opcode == static_cast<uint16_t>(wl_pointer::Event::BUTTON)) {
-        serial = d.readUnsignedInteger<uint32_t>();
-        d.readUnsignedInteger<uint32_t>();
-        lastButton = d.readUnsignedInteger<uint32_t>();
-        lastButtonState = d.readUnsignedInteger<uint32_t>();
+        Events event{};
+        event.type = EventType::BUTTON;
+        event.button.serial = d.readUnsignedInteger<uint32_t>();
+        event.timestamp = d.readUnsignedInteger<uint32_t>();
+        event.button.button = d.readUnsignedInteger<uint32_t>();
+        event.button.state = d.readUnsignedInteger<uint32_t>();
+
+        event.button.x = position.first;
+        event.button.y = position.second;
+        event.surfaceID = currentSurfaceID;
+
+        pendingFrame.push_back(event);
     }
     else if (opcode == static_cast<uint16_t>(wl_pointer::Event::AXIS)) {
-        d.readUnsignedInteger<uint32_t>();
-        uint32_t axis = d.readUnsignedInteger<uint32_t>();
-        double value = d.readFixed();
-        std::cout << "Axis: " << axis << " Value: " << value << '\n';
-        if (axis == static_cast<uint32_t>(wl_pointer::Axis::VERTICAL_SCROLL))
-            scrollY += value;
+        Events event{};
+        event.type = EventType::AXIS;
+        event.timestamp = d.readUnsignedInteger<uint32_t>();
+        event.axis.axis = d.readUnsignedInteger<uint32_t>();
+        event.axis.value = d.readFixed();
 
-        else if (axis == static_cast<uint32_t>(wl_pointer::Axis::HORIZONTAL_SCROLL))
-            scrollX += value;
-        //print scroll values
-        std::cout << scrollX << std::endl;
-        std::cout << scrollY << std::endl;
-        std::cout << "===" << std::endl;
+        event.surfaceID = currentSurfaceID;
+        pendingFrame.push_back(event);
     }
+    else if (opcode == static_cast<uint16_t>(wl_pointer::Event::FRAME)) {
+        flushFrame();
+    }
+}
+
+void Pointer::flushFrame() {
+    if (pendingFrame.empty()) return;
+    display.addEvents(pendingFrame);
+    pendingFrame.clear();
 }
 
 void Pointer::destroy() {

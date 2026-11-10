@@ -86,4 +86,12 @@ void Display::stop() {
     running = false;
 }
 
+std::optional<Events> Display::checkEvent(uint32_t surfaceId) {
+    return eventManager.searchEvent(surfaceId);
+}
+
+void Display::addEvents(std::vector<Events>& e) {
+    eventManager.addEvents(e);
+}
+
 Display::~Display() = default;

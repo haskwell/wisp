@@ -7,6 +7,10 @@
 #include "shmBuffer.hpp"
 #include <string>
 #include <memory>
+#include <optional>
+
+
+struct Events;
 class Display;
 class Globals;
 class Window {
@@ -47,4 +51,6 @@ public:
 
     bool frameReady();
     void cleanup();
+
+    std::optional<Events> pollEvents();
 };

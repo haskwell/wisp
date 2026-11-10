@@ -1,20 +1,17 @@
 #pragma once
-
 #include "platform/wayland/core/proxy.hpp"
+#include <utility>
+#include "../core/events.hpp"
 
 class Pointer : public Proxy {
 public:
-    uint32_t serial{};
-    uint32_t surfaceId{};
-    bool insideSurface = false;
-    double x{};
-    double y{};
-    double scrollX{};
-    double scrollY{};
-    uint32_t lastButton{};
-    uint32_t lastButtonState{};
+    uint32_t currentSurfaceID{};
+    std::pair<double, double> position{};
+    std::vector<Events> pendingFrame;
     Pointer(Display& d) : Proxy(d) {}
     void handleEvent(uint16_t, MessageDeserializer&) override;
+
+    void flushFrame();
 
     void destroy();
 };

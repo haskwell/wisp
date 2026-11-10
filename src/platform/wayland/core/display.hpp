@@ -6,11 +6,14 @@
 #include "../protocol/wl_display.hpp"
 #include <memory>
 
+#include "event_manager.hpp"
+
 class Display{
     Connection connection;
     MessageDeserializer deserializer;
     MessageSerializer serializer;
     ObjectManager objectManager;
+    EventManager eventManager;
 public:
     bool running = true;
     WlDisplay wldisplay{*this};
@@ -52,6 +55,9 @@ public:
 
     void run();
     void stop();
+
+    std::optional<Events> checkEvent(uint32_t surfaceId);
+    void addEvents(std::vector<Events> &e);
 
     ~Display();
 };

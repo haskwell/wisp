@@ -2,7 +2,6 @@
 #include "display.hpp"
 #include "globals.hpp"
 #include <algorithm>
-#include <iostream>
 
 #include "platform/wayland/protocol/wl_callback.hpp"
 
@@ -99,6 +98,11 @@ void Window::cleanup() {
         }
         else s++;
     }
+}
+
+std::optional<Events> Window::pollEvents() {
+    if (!surface) return std::nullopt;
+    return display.checkEvent(surface->objectId);
 }
 
 void Window::close() {
