@@ -46,7 +46,7 @@ public:
     void appendArg(int32_t a);
     void appendArg(std::string a);
 
-    void unregisterProxy(uint32_t id);
+    void unregisterProxy(uint32_t id, Proxy* p);
 
     void deleteProxy(uint32_t id);
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include "../protocol/wl_shm_pool.hpp"
 #include "../protocol/wl_buffer.hpp"

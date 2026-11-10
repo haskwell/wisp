@@ -15,7 +15,7 @@ class ObjectManager{
     public:
     uint32_t registerProxy(Proxy* p);
     void registerAt(uint32_t id, Proxy* p);
-    void unregisterProxy(uint32_t objectId);
+    void unregisterProxy(uint32_t objectId, Proxy* p);
     void deleteProxy(uint32_t objectId);
     Proxy* lookupProxy(uint32_t objectId);
 };

@@ -2,5 +2,5 @@
 #include "display.hpp"
 
 Proxy::~Proxy() {
-    display.unregisterProxy(objectId);
+    display.unregisterProxy(objectId, this);
 }

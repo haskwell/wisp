@@ -1,3 +1,4 @@
+#pragma once
 #include "../protocol/wl_compositor.hpp"
 #include "../protocol/wl_shm.hpp"
 #include "../protocol/xdg_wm_base.hpp"

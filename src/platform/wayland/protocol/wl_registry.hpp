@@ -5,6 +5,8 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <algorithm>
+#include <stdexcept>
 struct Global{
     uint32_t name;
     std::string interface;

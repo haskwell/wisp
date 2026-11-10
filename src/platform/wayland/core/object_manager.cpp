@@ -19,9 +19,11 @@ void ObjectManager::registerAt(uint32_t id, Proxy* p){
     waylandObjects[id] = p;
 }
 
-void ObjectManager::unregisterProxy(uint32_t id){
+void ObjectManager::unregisterProxy(uint32_t id, Proxy* p){
     auto it = waylandObjects.find(id);
-    if(it != waylandObjects.end()) it->second = nullptr;
+    if (it != waylandObjects.end() && it->second == p) {
+        it->second = nullptr;
+    }
 }
 
 void ObjectManager::deleteProxy(uint32_t id){

@@ -107,6 +107,10 @@ void Connection::sendMessage(const std::span<const uint8_t> message, const std::
     }
 }
 
+int Connection::getFD() const {
+    return socket.getFD();
+}
+
 void Connection::processFDs(struct msghdr &msg, std::vector<int>& fds, size_t& fdsOldSize){
     if(msg.msg_flags & MSG_CTRUNC){
         throw std::runtime_error("not enough space for all FDs");

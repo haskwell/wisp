@@ -20,9 +20,14 @@ void ShmBuffer::initialize(){
     buffers.reserve(bufferCount);
     stride = width * 4;
     size = width * height * 4 * bufferCount;
-    ftruncate(fd, size);
+    if (ftruncate(fd, size) == -1) {
+        throw std::runtime_error("Failed to resize file");
+    }
 
     data = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (data == MAP_FAILED) {
+        throw std::runtime_error("Failed to map memory");
+    }
 
     pool = shm.createShmPool(size, fd);
     int32_t offset = 0;

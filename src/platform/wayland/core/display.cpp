@@ -3,6 +3,11 @@
 #include "../protocol/opcodes.hpp"
 #include "../protocol/wl_registry.hpp"
 #include <unistd.h>
+#include <poll.h>
+#include <cerrno>
+#include <stdexcept>
+#include <system_error>
+
 Display::Display(){
     objectManager.registerAt(1, &wldisplay);
     registry = wldisplay.getRegistry();
@@ -45,7 +50,7 @@ void Display::appendArg(std::string a){
     serializer.appendString(a);
 }
 
-void Display::unregisterProxy(uint32_t id){ objectManager.unregisterProxy(id); }
+void Display::unregisterProxy(uint32_t id, Proxy* p){ objectManager.unregisterProxy(id, p); }
 void Display::deleteProxy(uint32_t id){ objectManager.deleteProxy(id); }
 
 Registry& Display::getRegistry() {
@@ -53,7 +58,28 @@ Registry& Display::getRegistry() {
 }
 
 void Display::run(){
-    dispatch();
+    pollfd pfd{};
+    pfd.fd = connection.getFD();
+    pfd.events = POLLIN;
+    int timeout = -1;
+    while (true) {
+        int result = poll(&pfd, 1, timeout);
+        if (result < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            throw std::system_error(errno, std::generic_category(), "poll");
+        }
+        if (result == 0) break;
+        if (pfd.revents & (POLLERR | POLLNVAL)) {
+            throw std::runtime_error("wayland socket error");
+        }
+        if (!(pfd.revents & POLLIN)) {
+            throw std::runtime_error("wayland connection closed");
+        }
+        dispatch();
+        timeout = 0;
+    }
 }
 
 void Display::stop() {

@@ -43,6 +43,6 @@ class Connection{
     Connection();
 
     void sendMessage(const std::span<const uint8_t> message, const std::span<const int> fd = {});
-
+    int getFD() const;
     RecievedMessage receiveMessage();
 };

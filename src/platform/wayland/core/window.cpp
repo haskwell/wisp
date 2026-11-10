@@ -95,7 +95,7 @@ bool Window::frameReady() {
 void Window::cleanup() {
     for (auto s = retiring.begin(); s != retiring.end(); ) {
         if (!(*s)->anyBusy()) {
-            retiring.erase(s);
+            s = retiring.erase(s);
         }
         else s++;
     }

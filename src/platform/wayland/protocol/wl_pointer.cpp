@@ -38,11 +38,11 @@ void Pointer::handleEvent(uint16_t opcode, MessageDeserializer & d) {
 
         else if (axis == static_cast<uint32_t>(wl_pointer::Axis::HORIZONTAL_SCROLL))
             scrollX += value;
+        //print scroll values
+        std::cout << scrollX << std::endl;
+        std::cout << scrollY << std::endl;
+        std::cout << "===" << std::endl;
     }
-    //print scroll values
-    std::cout << scrollX << std::endl;
-    std::cout << scrollY << std::endl;
-    std::cout << "===" << std::endl;
 }
 
 void Pointer::destroy() {

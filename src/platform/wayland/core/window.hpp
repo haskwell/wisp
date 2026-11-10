@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../protocol/wl_surface.hpp"
 #include "../protocol/xdg_surface.hpp"
 #include "../protocol/xdg_toplevel.hpp"
