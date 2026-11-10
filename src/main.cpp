@@ -5,10 +5,10 @@
 int main(){
 
     Context context;
-    Window window(context.getDisplay(), context.getGlobals(), 100, 100, "hello");
+    Window window(context.getDisplay(), context.getGlobals(), 600, 800, "hello");
     window.initialize();
     window.render();
-    Window window1(context.getDisplay(), context.getGlobals(), 100, 100, "hello");
+    Window window1(context.getDisplay(), context.getGlobals(), 600, 800, "hello");
     window1.initialize();
     window1.render();
     // Inside your main loop:
