@@ -35,9 +35,9 @@ uint32_t XKB::getKeySym(uint32_t key) {
 }
 
 std::string XKB::getUTF8(uint32_t key) {
-    char buffer[10];
+    char buffer[10]{};
     int length = xkb_state_key_get_utf8(state, key + 8, buffer, sizeof(buffer));
-    std::string result(buffer);
+    std::string result(buffer, length);
     return result;
 }
 

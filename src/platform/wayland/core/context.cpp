@@ -1,10 +1,20 @@
-#include "context.hpp"
+#include <wisp/context.hpp>
 
-Context::Context() : display(), globals(display) {}
+#include "display.hpp"
+#include "context_implementation.hpp"
+#include "globals.hpp"
+using namespace wisp;
 
-Display& Context::getDisplay(){
-    return display;
+Context::Context() : implementation(std::make_unique<Implementation>()){}
+Context::~Context() = default;
+bool Context::isRunning() const {
+    return implementation->display.running;
 }
-Globals& Context::getGlobals(){
-    return globals;
+
+void Context::stop() const {
+    implementation->display.running = false;
+}
+
+void Context::dispatch() const {
+    implementation->display.run();
 }

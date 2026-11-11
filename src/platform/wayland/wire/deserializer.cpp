@@ -89,6 +89,9 @@ std::vector<uint32_t> MessageDeserializer::readArray32bit() {
     bytesExist(4);
     arrLen = readBytesUnsigned<uint32_t>(4);
     std::size_t bytesToRead = arrLen;
+    if (arrLen % 4 != 0) {
+        throw std::runtime_error("Invalid 32-bit array length");
+    }
     bytesExist(bytesToRead);
     std::size_t currentPos = cursorPosition;
     std::vector<uint8_t> arr(bytesToRead);

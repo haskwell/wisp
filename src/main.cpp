@@ -1,80 +1,14 @@
-#include "platform/wayland/core/context.hpp"
-#include "platform/wayland/core/window.hpp"
-
-#include <iostream>
-
-void handleEvents(Window& window, const char* name) {
-    while (auto event = window.pollEvents()) {
-        switch (event->type) {
-            case EventType::K_ENTER:
-                std::cout << name << ": Keyboard focus entered\n";
-                break;
-
-            case EventType::K_LEAVE:
-                std::cout << name << ": Keyboard focus left\n";
-                break;
-
-            case EventType::KEY: {
-                const auto& key = event->key;
-
-                std::cout
-                    << name
-                    << " | Keycode: " << key.keyCode
-                    << " | Keysym: " << key.keysym
-                    << " | State: " << (key.state ? "PRESSED" : "RELEASED");
-
-                if (key.state) {
-                    std::cout << " | UTF-8: \"" << event->utf8 << "\"";
-                }
-
-                std::cout << "\nHeld keys: ";
-
-                for (uint32_t k : event->keys) {
-                    std::cout << k << " ";
-                }
-
-                std::cout << "\n\n";
-                break;
-            }
-
-            default:
-                break;
-        }
-    }
-}
-
+#include <wisp/context.hpp>
+#include <wisp/window.hpp>
 int main() {
-    Context context;
+    wisp::Context context;
+    wisp::Window window(context, 800, 600, "wisp");
+    wisp::Window window1(context, 800, 600, "wisp");
 
-    Window window(
-        context.getDisplay(), context.getGlobals(),
-        800, 600, "Keyboard Test 1"
-    );
-
-    Window window1(
-        context.getDisplay(), context.getGlobals(),
-        800, 600, "Keyboard Test 2"
-    );
-
-    window.initialize();
-    window1.initialize();
-
-    window.render();
-    window1.render();
-
-    while (context.getDisplay().running) {
-        context.getDisplay().run();
-
-        handleEvents(window, "Window 1");
-        handleEvents(window1, "Window 2");
-
-        window.update();
-        window1.update();
-
-        if (window.isClosed() && window1.isClosed()) {
-            context.getDisplay().stop();
-        }
+    while (window.isOpen() || window1.isOpen()) {
+        context.dispatch();
+        if (window.isOpen()) window.update();
+        if (window1.isOpen()) window1.update();
+        window.pollEvents();
     }
-
-    return 0;
 }

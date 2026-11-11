@@ -36,7 +36,7 @@ void MessageSerializer::appendString(const std::string& str){
     }
     buffer.push_back('\0');
     int padding = (4 - (length % 4)) % 4;
-    for(std::size_t i = 0; i < padding; i++){
+    for(std::size_t i = 0; i < static_cast<std::size_t>(padding); i++){
         buffer.push_back(static_cast<uint8_t>(0));
     }
 }
@@ -49,7 +49,7 @@ void MessageSerializer::appendArray(std::span<const uint8_t> arr){
         buffer.push_back(character);
     }
     int padding = (4 - (length % 4)) % 4;
-    for(std::size_t i = 0; i < padding; i++){
+    for(std::size_t i = 0; i < static_cast<std::size_t>(padding); i++){
         buffer.push_back(static_cast<uint8_t>(0));
     }
 }
