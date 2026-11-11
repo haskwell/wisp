@@ -10,7 +10,7 @@
 
 #include "wayland_utils.hpp"
 #include "connection.hpp"
-
+#include <deque>
 Socket::Socket(){
     
     path = get_path();
@@ -53,6 +53,15 @@ Connection::Connection(){
     if(connect(socket.getFD(), saddr, socklen) < 0){
         throw std::system_error(errno, std::generic_category(), "Connection failed");
     }
+}
+
+int Connection::takeFd() {
+    if (pendingFds.empty()) {
+        throw std::runtime_error("expected an fd but none was received");
+    }
+    int fd = pendingFds.front();
+    pendingFds.pop_front();
+    return fd;
 }
 
 void Connection::sendMessage(const std::span<const uint8_t> message, const std::span<const int> fd){
@@ -111,30 +120,31 @@ int Connection::getFD() const {
     return socket.getFD();
 }
 
-void Connection::processFDs(struct msghdr &msg, std::vector<int>& fds, size_t& fdsOldSize){
+void Connection::processFDs(struct msghdr &msg){
     if(msg.msg_flags & MSG_CTRUNC){
         throw std::runtime_error("not enough space for all FDs");
     }
-    cmsghdr* cmsg = CMSG_FIRSTHDR(&msg);
-    if(cmsg != nullptr && cmsg->cmsg_level == SOL_SOCKET
-        && cmsg->cmsg_type == SCM_RIGHTS && cmsg->cmsg_len >= CMSG_LEN(0)){
-        size_t cmsgLen = cmsg->cmsg_len - CMSG_LEN(0);
-        unsigned char* cmsgData = CMSG_DATA(cmsg);
-        if(cmsgLen % sizeof(int) != 0){
+    for (cmsghdr* c = CMSG_FIRSTHDR(&msg); c != nullptr; c = CMSG_NXTHDR(&msg, c)) {
+        if (c->cmsg_level != SOL_SOCKET || c->cmsg_type != SCM_RIGHTS) continue;
+        if (c->cmsg_len < CMSG_LEN(0)) continue;
+        size_t dataLen = c->cmsg_len - CMSG_LEN(0);
+        if (dataLen % sizeof(int) != 0) {
             throw std::runtime_error("corrupted stream");
         }
-        int numOfFds = cmsgLen/sizeof(int);
-        fds.resize(fds.size() + numOfFds);
-        memcpy(fds.data() + fdsOldSize, cmsgData, cmsgLen);
-        fdsOldSize = fds.size();
+        size_t n = dataLen / sizeof(int);
+        const unsigned char* data = CMSG_DATA(c);
+        for (size_t i = 0; i < n; ++i) {
+            int fd;
+            memcpy(&fd, data + i * sizeof(int), sizeof(int));  // avoids alignment issues
+            pendingFds.push_back(fd);
+        }
     }
 }
 
-RecievedMessage Connection::receiveMessage(){
+std::vector<uint8_t> Connection::receiveMessage(){
     const size_t MAX_FDS = 16;
     std::vector<uint8_t> message(8);
-    std::vector<int> fds;
-    fds.reserve(MAX_FDS);
+
     struct iovec iov{};
     iov.iov_base = (void*)message.data();
     iov.iov_len = message.size();
@@ -150,7 +160,7 @@ RecievedMessage Connection::receiveMessage(){
 
     size_t headerLength = 8;
     size_t recieved = 0;
-    size_t fdsOldSize = 0;
+
     while(recieved < headerLength){
         msg.msg_controllen = requiredBytes;
         ssize_t var = recvmsg(socket.getFD(), &msg, MSG_CMSG_CLOEXEC);
@@ -162,7 +172,7 @@ RecievedMessage Connection::receiveMessage(){
             throw std::runtime_error("connection closed");
         }
         else{
-            processFDs(msg, fds, fdsOldSize);
+            processFDs(msg);
             if(msg.msg_flags & MSG_TRUNC){
                 throw std::runtime_error("data was truncated");
             }
@@ -189,7 +199,7 @@ RecievedMessage Connection::receiveMessage(){
             throw std::runtime_error("connection closed");
         }
         else {
-            processFDs(msg, fds, fdsOldSize);
+            processFDs(msg);
             if(msg.msg_flags & MSG_TRUNC){
                 throw std::runtime_error("data was truncated");
             }
@@ -198,8 +208,9 @@ RecievedMessage Connection::receiveMessage(){
             iov.iov_len -= var;  
         }
     }
-    RecievedMessage res;
-    res.message = std::move(message);
-    res.fds = std::move(fds);
-    return res;
+    return message;
+}
+
+Connection::~Connection() {
+    for (int fd : pendingFds) close(fd);
 }

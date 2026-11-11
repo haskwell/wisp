@@ -10,9 +10,13 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug)
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 add_executable(wisp ${SOURCES})
 
 target_include_directories(wisp PRIVATE src)
 target_compile_options(wisp PRIVATE -Wall -Wextra -fsanitize=address,undefined)
 target_link_options(wisp PRIVATE -fsanitize=address,undefined)
+target_link_libraries(wisp PRIVATE PkgConfig::XKBCOMMON)

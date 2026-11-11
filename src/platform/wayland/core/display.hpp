@@ -59,5 +59,7 @@ public:
     std::optional<Events> checkEvent(uint32_t surfaceId);
     void addEvents(std::vector<Events> &e);
 
+    void addEvent(Events &e);
+    int takeFd();
     ~Display();
 };

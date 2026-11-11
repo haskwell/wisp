@@ -19,8 +19,8 @@ void Display::send(std::span<const int> fds){
 }
 
 void Display::dispatch(){
-    RecievedMessage res = connection.receiveMessage();
-    deserializer.startDeserializer(res.message);
+    std::vector<uint8_t> message = connection.receiveMessage();
+    deserializer.startDeserializer(message);
     uint32_t objectID = deserializer.readObjectID();
     uint16_t opcode = deserializer.readOpcode();
     deserializer.readMessageLength();
@@ -28,7 +28,7 @@ void Display::dispatch(){
     if(p){
         p->handleEvent(opcode, deserializer);
     }
-    for (int fd : res.fds) close(fd);
+
 }
 
 void Display::roundTrip(){
@@ -37,7 +37,7 @@ void Display::roundTrip(){
         dispatch();
     }
 }
-
+int Display::takeFd() { return connection.takeFd(); }
 void Display::appendArg(uint32_t a){
     serializer.append_uint(a);
 }
@@ -92,6 +92,10 @@ std::optional<Events> Display::checkEvent(uint32_t surfaceId) {
 
 void Display::addEvents(std::vector<Events>& e) {
     eventManager.addEvents(e);
+}
+
+void Display::addEvent(Events& e) {
+    eventManager.addEvent(e);
 }
 
 Display::~Display() = default;

@@ -6,7 +6,7 @@
 void Pointer::handleEvent(uint16_t opcode, MessageDeserializer & d) {
     if (opcode == static_cast<uint16_t>(wl_pointer::Event::ENTER)) {
         Events event{};
-        event.type = EventType::ENTER;
+        event.type = EventType::P_ENTER;
         event.enter.serial = d.readUnsignedInteger<uint32_t>();
         event.surfaceID = d.readUnsignedInteger<uint32_t>();
         event.enter.x = d.readFixed();
@@ -20,7 +20,7 @@ void Pointer::handleEvent(uint16_t opcode, MessageDeserializer & d) {
     }
     else if (opcode == static_cast<uint16_t>(wl_pointer::Event::LEAVE)) {
         Events event{};
-        event.type = EventType::LEAVE;
+        event.type = EventType::P_LEAVE;
         event.leave.serial = d.readUnsignedInteger<uint32_t>();
         event.surfaceID = d.readUnsignedInteger<uint32_t>();
         pendingFrame.push_back(event);

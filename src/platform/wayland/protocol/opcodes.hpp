@@ -226,4 +226,9 @@ namespace wl_keyboard {
         RELEASED = 0,
         PRESSED = 1
     };
+
+    enum class KeymapFormat : uint32_t {
+        NO_KEYMAP = 0,
+        XKB_V1 = 1
+    };
 }

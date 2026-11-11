@@ -16,3 +16,7 @@ std::optional<Events> EventManager::searchEvent(uint32_t surfaceId) {
 void EventManager::addEvents(std::vector<Events>& e) {
     events.insert(events.end(), e.begin(), e.end());
 }
+
+void EventManager::addEvent(Events& e) {
+    events.push_back(e);
+}

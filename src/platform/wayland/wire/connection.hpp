@@ -5,12 +5,8 @@
 #include <cstdint>
 #include <vector>
 #include <cstddef>
+#include <deque>
 #include <string>
-
-struct RecievedMessage{
-    std::vector<uint8_t> message;
-    std::vector<int> fds;
-};
 
 class Socket{
     int fd = -1;
@@ -34,15 +30,16 @@ class Socket{
 class Connection{
     private:
     Socket socket;
-
-    void processFDs(struct msghdr &msg, std::vector<int>& fds, size_t& fdsOldSize);
+    std::deque<int> pendingFds;
+    void processFDs(struct msghdr &msg);
 
     public:
     Connection(int existingFD);
 
     Connection();
-
+    int takeFd();
     void sendMessage(const std::span<const uint8_t> message, const std::span<const int> fd = {});
     int getFD() const;
-    RecievedMessage receiveMessage();
+    std::vector<uint8_t> receiveMessage();
+    ~Connection();
 };
