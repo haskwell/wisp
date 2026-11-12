@@ -23,5 +23,6 @@ public:
     uint32_t* getPixels(int index) const;
     bool anyBusy();
     int acquireFreeBuffer();
+    uint32_t getStride() const;
     ~ShmBuffer();
 };

@@ -4,6 +4,7 @@
 #include <string>
 #include <optional>
 #include <wisp/events.hpp>
+#include <wisp/frameBuffer.hpp>
 namespace wisp {
     class Context;
     class Window {
@@ -15,5 +16,6 @@ namespace wisp {
         void update();
         bool isOpen() const;
         std::optional<Events> pollEvents();
+        FrameBuffer getFrameBuffer();
     };
 }

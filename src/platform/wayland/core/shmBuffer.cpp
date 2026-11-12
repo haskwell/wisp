@@ -67,6 +67,10 @@ int ShmBuffer::acquireFreeBuffer() {
     return -1;
 }
 
+uint32_t ShmBuffer::getStride() const {
+    return stride;
+}
+
 ShmBuffer::~ShmBuffer(){
     for (auto& b : buffers) b->destroy();
     if (data) munmap(data, size);

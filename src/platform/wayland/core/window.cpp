@@ -1,6 +1,7 @@
 #include "display.hpp"
 #include "globals.hpp"
 #include <algorithm>
+#include <iostream>
 #include <wisp/window.hpp>
 #include <wisp/context.hpp>
 #include "../protocol/wl_callback.hpp"
@@ -18,6 +19,7 @@ struct Window::Implementation {
     bool nextColor = false;
     uint32_t width;
     uint32_t height;
+    uint32_t stride;
     std::string title;
     std::unique_ptr<Surface> surface;
     std::unique_ptr<XdgSurface> xdgSurface;
@@ -27,6 +29,7 @@ struct Window::Implementation {
     std::unique_ptr<Callback> frameCallback;
     uint32_t frameCount = 0;
     std::vector<std::unique_ptr<ShmBuffer>> retiring;
+    int bufferIndex = -1;
     bool destroyed = false;
 public:
     Implementation(Display& d, Globals& g, uint32_t w, uint32_t h, std::string t) :
@@ -56,15 +59,20 @@ public:
         if(xdgTopLevel->height != 0) height = xdgTopLevel->height;
 
         shmBuffer = std::make_unique<ShmBuffer>(globals.getSHM(), width, height);
+        stride = shmBuffer->getStride();
         shmBuffer->initialize();
-        render();
+        bufferIndex = shmBuffer->acquireFreeBuffer();
+        present();
     }
-    void present(int bufferIndex) {
+    void present() {
+        if (bufferIndex < 0) return;
         surface->sendAttachRequest(shmBuffer->getBuffer(bufferIndex).objectId, 0, 0);
         surface->sendDamageBufferRequest(0, 0, width, height);
         frameCallback = surface->frame();
         surface->commit();
         shmBuffer->getBuffer(bufferIndex).busy = true;
+        std::cout << "displayed on bufferindex: " << bufferIndex << std::endl;
+        bufferIndex = -1;
     }
     void handleConfigure() {
         if (destroyed || !xdgTopLevel) return;
@@ -81,6 +89,7 @@ public:
         resize(newWidth, newHeight);
     }
     void resize(uint32_t newWidth, uint32_t newHeight) {
+        bufferIndex = -1;
         width = newWidth;
         height = newHeight;
         retiring.push_back(std::move(shmBuffer));
@@ -88,20 +97,14 @@ public:
         shmBuffer->initialize();
         cleanup();
     }
-    void render() {
-        cleanup();
-        int bufferIndex = shmBuffer->acquireFreeBuffer();
-        if (bufferIndex < 0) return;
-        uint32_t* px = shmBuffer->getPixels(bufferIndex);
-        std::fill(px, px + static_cast<size_t>(width) * height, frameColor);
-        frameColor = nextColor ? 0xFF3366CC : 0xFFCC6633;
-        nextColor = !nextColor;
-
-        //std::cout << "Rendering frame " << frameCount
-        //          << " using buffer " << bufferIndex << '\n';
-
-        frameCount++;
-        present(bufferIndex);
+    uint32_t* getPixels() {
+        if (!frameReady()) return nullptr;
+        if (bufferIndex >= 0) {
+            uint32_t* pixels = shmBuffer->getPixels(bufferIndex);
+            stride = shmBuffer->getStride();
+            return pixels;
+        }
+        return nullptr;
     }
     bool closeRequested() const {
         return xdgTopLevel && xdgTopLevel->closeRequested;
@@ -157,11 +160,11 @@ public:
         }
 
         if (frameReady()) {
-            render();
+            present();
         }
     }
     bool isClosed() const {
-        return destroyed && retiring.empty();
+        return destroyed;
     }
 };
 
@@ -185,4 +188,9 @@ std::optional<Events> Window::pollEvents() {
     return impl->display.checkEvent(impl->surface->objectId);
 }
 
-
+FrameBuffer Window::getFrameBuffer() {
+    if (impl->destroyed || !impl->shmBuffer) return {nullptr, 0, 0, 0};
+    impl->bufferIndex = impl->shmBuffer->acquireFreeBuffer();
+    FrameBuffer f(impl->getPixels(), impl->width, impl->height, impl->stride);
+    return f;
+}

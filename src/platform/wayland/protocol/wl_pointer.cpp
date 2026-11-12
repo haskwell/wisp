@@ -3,6 +3,7 @@
 #include "opcodes.hpp"
 #include "platform/wayland/core/display.hpp"
 #include <utility>
+using namespace wisp;
 void Pointer::handleEvent(uint16_t opcode, MessageDeserializer & d) {
     if (opcode == static_cast<uint16_t>(wl_pointer::Event::ENTER)) {
         Events event{};

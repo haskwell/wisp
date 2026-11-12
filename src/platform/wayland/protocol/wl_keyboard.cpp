@@ -6,7 +6,7 @@
 
 #include "opcodes.hpp"
 #include "platform/wayland/core/display.hpp"
-
+using namespace wisp;
 void Keyboard::destroy() {
     display.sendRequest(objectId, wl_keyboard::Request::RELEASE);
 }

@@ -3,7 +3,7 @@
 #include "platform/wayland/core/proxy.hpp"
 #include "opcodes.hpp"
 #include "platform/wayland/core/xkb.hpp"
-struct Events;
+#include <wisp/events.hpp>
 class Keyboard : public Proxy {
 public:
     uint32_t serial;
@@ -20,7 +20,7 @@ public:
         MessageDeserializer& d
     ) override;
 
-    void sendEvent(Events e);
+    void sendEvent(wisp::Events e);
 
     void destroy();
 };

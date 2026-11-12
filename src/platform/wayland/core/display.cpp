@@ -7,7 +7,7 @@
 #include <cerrno>
 #include <stdexcept>
 #include <system_error>
-
+using namespace wisp;
 Display::Display(){
     objectManager.registerAt(1, &wldisplay);
     registry = wldisplay.getRegistry();

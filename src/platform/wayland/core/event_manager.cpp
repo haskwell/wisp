@@ -1,7 +1,7 @@
 #include "event_manager.hpp"
 
 #include <cstdint>
-
+using namespace wisp;
 std::optional<Events> EventManager::searchEvent(uint32_t surfaceId) {
     for (auto it = events.begin(); it != events.end(); ++it) {
         if (it->surfaceID == surfaceId) {

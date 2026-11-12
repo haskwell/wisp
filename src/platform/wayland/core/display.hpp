@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "event_manager.hpp"
+#include <wisp/events.hpp>
 
 class Display{
     Connection connection;
@@ -56,10 +57,10 @@ public:
     void run();
     void stop();
 
-    std::optional<Events> checkEvent(uint32_t surfaceId);
-    void addEvents(std::vector<Events> &e);
+    std::optional<wisp::Events> checkEvent(uint32_t surfaceId);
+    void addEvents(std::vector<wisp::Events> &e);
 
-    void addEvent(Events &e);
+    void addEvent(wisp::Events &e);
     int takeFd();
     ~Display();
 };
