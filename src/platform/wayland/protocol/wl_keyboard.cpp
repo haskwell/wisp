@@ -7,6 +7,35 @@
 #include "opcodes.hpp"
 #include "platform/wayland/core/display.hpp"
 using namespace wisp;
+static Key translateKeysym(uint32_t sym) {
+    switch (sym) {
+        case XKB_KEY_Left:      return Key::Left;
+        case XKB_KEY_Right:     return Key::Right;
+        case XKB_KEY_Up:        return Key::Up;
+        case XKB_KEY_Down:      return Key::Down;
+        case XKB_KEY_space:     return Key::Space;
+        case XKB_KEY_Return:    return Key::Enter;
+        case XKB_KEY_Escape:    return Key::Escape;
+        case XKB_KEY_Tab:       return Key::Tab;
+        case XKB_KEY_BackSpace: return Key::Backspace;
+        case XKB_KEY_Shift_L:   return Key::LShift;
+        case XKB_KEY_Shift_R:   return Key::RShift;
+        case XKB_KEY_Control_L: return Key::LCtrl;
+        case XKB_KEY_Control_R: return Key::RCtrl;
+        case XKB_KEY_Alt_L:     return Key::LAlt;
+        case XKB_KEY_Alt_R:     return Key::RAlt;
+        default: break;
+    }
+    if (sym >= XKB_KEY_a && sym <= XKB_KEY_z)
+        return static_cast<Key>(static_cast<uint16_t>(Key::A) + (sym - XKB_KEY_a));
+    if (sym >= XKB_KEY_A && sym <= XKB_KEY_Z)
+        return static_cast<Key>(static_cast<uint16_t>(Key::A) + (sym - XKB_KEY_A));
+    if (sym >= XKB_KEY_0 && sym <= XKB_KEY_9)
+        return static_cast<Key>(static_cast<uint16_t>(Key::Num0) + (sym - XKB_KEY_0));
+    if (sym >= XKB_KEY_F1 && sym <= XKB_KEY_F12)
+        return static_cast<Key>(static_cast<uint16_t>(Key::F1) + (sym - XKB_KEY_F1));
+    return Key::Unknown;
+}
 void Keyboard::destroy() {
     display.sendRequest(objectId, wl_keyboard::Request::RELEASE);
 }
@@ -47,17 +76,15 @@ void Keyboard::handleEvent(uint16_t opcode, MessageDeserializer& d) {
         if (state == wl_keyboard::KeyState::PRESSED) {
             pressedKeys.push_back(key);
             event.key.state = 1;
-            uint32_t keySym = xkb.getKeySym(key);
-            event.utf8 = xkb.getUTF8(key);
-            event.key.keysym = keySym;
         }
         if (state == wl_keyboard::KeyState::RELEASED) {
             std::erase(pressedKeys, key);
             event.key.state = 0;
-            uint32_t keySym = xkb.getKeySym(key);
-            event.utf8 = xkb.getUTF8(key);
-            event.key.keysym = keySym;
         }
+        uint32_t keySym = xkb.getKeySym(key);
+        event.utf8 = xkb.getUTF8(key);
+        event.key.keysym = keySym;
+        event.key.key = translateKeysym(keySym);
         event.keys.assign(pressedKeys.begin(), pressedKeys.end());
         event.surfaceID = surfaceId;
         sendEvent(event);

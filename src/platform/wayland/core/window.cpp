@@ -1,7 +1,6 @@
 #include "display.hpp"
 #include "globals.hpp"
 #include <algorithm>
-#include <iostream>
 #include <wisp/window.hpp>
 #include <wisp/context.hpp>
 #include "../protocol/wl_callback.hpp"
@@ -71,7 +70,6 @@ public:
         frameCallback = surface->frame();
         surface->commit();
         shmBuffer->getBuffer(bufferIndex).busy = true;
-        std::cout << "displayed on bufferindex: " << bufferIndex << std::endl;
         bufferIndex = -1;
     }
     void handleConfigure() {
