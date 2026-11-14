@@ -1,4 +1,8 @@
 #include "wl_shm.hpp"
+
+#include <iostream>
+#include <ostream>
+
 #include "wl_shm_pool.hpp"
 #include "../core/display.hpp"
 #include "opcodes.hpp"

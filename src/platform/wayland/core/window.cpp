@@ -14,11 +14,9 @@ using namespace wisp;
 struct Window::Implementation {
     Display& display;
     Globals& globals;
-    uint32_t frameColor = 0xFF3366CC;
-    bool nextColor = false;
     uint32_t width;
     uint32_t height;
-    uint32_t stride;
+    uint32_t stride{};
     std::string title;
     std::unique_ptr<Surface> surface;
     std::unique_ptr<XdgSurface> xdgSurface;
@@ -26,11 +24,10 @@ struct Window::Implementation {
     std::unique_ptr<ZxdgTopLevel> zxdgTopLevel;
     std::unique_ptr<ShmBuffer> shmBuffer;
     std::unique_ptr<Callback> frameCallback;
-    uint32_t frameCount = 0;
     std::vector<std::unique_ptr<ShmBuffer>> retiring;
     int bufferIndex = -1;
     bool destroyed = false;
-public:
+
     Implementation(Display& d, Globals& g, uint32_t w, uint32_t h, std::string t) :
         display(d), globals(g), width(w), height(h), title(t) {}
     void initialize(){
@@ -93,16 +90,12 @@ public:
         retiring.push_back(std::move(shmBuffer));
         shmBuffer = std::make_unique<ShmBuffer>(globals.getSHM(), width, height);
         shmBuffer->initialize();
+        stride = shmBuffer->getStride();
         cleanup();
     }
     uint32_t* getPixels() {
-        if (!frameReady()) return nullptr;
-        if (bufferIndex >= 0) {
-            uint32_t* pixels = shmBuffer->getPixels(bufferIndex);
-            stride = shmBuffer->getStride();
-            return pixels;
-        }
-        return nullptr;
+        if (bufferIndex < 0) return nullptr;
+        return shmBuffer->getPixels(bufferIndex);
     }
     bool closeRequested() const {
         return xdgTopLevel && xdgTopLevel->closeRequested;
@@ -188,7 +181,6 @@ std::optional<Events> Window::pollEvents() {
 
 FrameBuffer Window::getFrameBuffer() {
     if (impl->destroyed || !impl->shmBuffer) return {nullptr, 0, 0, 0};
-    impl->bufferIndex = impl->shmBuffer->acquireFreeBuffer();
-    FrameBuffer f(impl->getPixels(), impl->width, impl->height, impl->stride);
-    return f;
+    if (impl->bufferIndex < 0) impl->bufferIndex = impl->shmBuffer->acquireFreeBuffer();
+    return {impl->getPixels(), impl->width, impl->height, impl->stride};
 }

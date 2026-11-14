@@ -48,6 +48,10 @@ add_library(wisp
         src/platform/wayland/wire/deserializer.cpp
         src/platform/wayland/wire/serializer.cpp
         src/platform/wayland/wire/wayland_utils.cpp
+
+        # Raster
+        src/raster/rasterizer.cpp
+        src/gfx2d/renderer2d.cpp
 )
 
 target_include_directories(wisp
@@ -56,16 +60,10 @@ target_include_directories(wisp
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
-target_compile_options(wisp PRIVATE -Wall -Wextra -fsanitize=address,undefined)
 
-target_compile_options(wisp PRIVATE
-        -Wall -Wextra
-        -fsanitize=address,undefined
-)
-
-target_link_options(wisp PUBLIC
-        -fsanitize=address,undefined
-)
+target_compile_options(wisp PRIVATE -Wall -Wextra)
+target_compile_options(wisp PUBLIC -fsanitize=address,undefined)
+target_link_options(wisp PUBLIC -fsanitize=address,undefined)
 
 target_link_libraries(wisp PUBLIC PkgConfig::XKBCOMMON)
 

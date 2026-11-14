@@ -1,6 +1,8 @@
 #pragma once
 #include "../core/proxy.hpp"
 #include <memory>
+
+#include "opcodes.hpp"
 class ShmPool;
 class Shm : public Proxy {
     public:

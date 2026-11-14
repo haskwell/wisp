@@ -7,7 +7,7 @@ std::unique_ptr<Buffer> ShmPool::createBuffer(int32_t width, int32_t height, int
     auto s = display.registerProxy<Buffer>();
     display.sendRequest(objectId, wl_shm_pool::Request::CREATE_BUFFER, s->objectId,
         offset, width, height, stride,
-        static_cast<uint32_t>(wl_shm::Format::ARGB8888));
+        static_cast<uint32_t>(wl_shm::Format::XRGB8888));
     return s;
 }
 
