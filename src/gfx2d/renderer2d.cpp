@@ -15,3 +15,7 @@ void Renderer::endFrame() {
 void Renderer::drawPoint(Vec2 p, Color c) {
     rasterizer.drawPoint(p, c);
 }
+
+void Renderer::drawLine(Vec2 p1, Vec2 p2, Color c) {
+    rasterizer.drawLine(p1, p2, c);
+}

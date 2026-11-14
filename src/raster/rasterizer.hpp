@@ -5,6 +5,9 @@
 class Rasterizer {
     FrameBuffer frameBuffer{};
     void setPixel(Vec2 p, wisp::Color c);
+
+    void setPixel(int x, int y, wisp::Color c);
+
     uint32_t* getPixel(Vec2 p);
 public:
     void drawLine(Vec2, Vec2, wisp::Color);
