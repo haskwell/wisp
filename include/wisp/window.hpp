@@ -17,5 +17,7 @@ namespace wisp {
         bool isOpen() const;
         std::optional<Events> pollEvents();
         FrameBuffer getFrameBuffer();
+        uint32_t getWidth() const;
+        uint32_t getHeight() const;
     };
 }

@@ -1,6 +1,5 @@
 #include "shmBuffer.hpp"
 #include <sys/mman.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <cstdint>
 #include <cstddef>

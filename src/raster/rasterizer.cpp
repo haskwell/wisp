@@ -66,6 +66,12 @@ void Rasterizer::drawPoint(Vec2 p, wisp::Color c) {
     setPixel(p, c);
 }
 
+void Rasterizer::drawTriangle(Vec2 p1, Vec2 p2, Vec2 p3, wisp::Color c) {
+    drawLine(p1, p2, c);
+    drawLine(p1, p3, c);
+    drawLine(p2, p3, c);
+}
+
 void Rasterizer::setFramebuffer(FrameBuffer f) {
     frameBuffer = f;
 }

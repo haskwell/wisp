@@ -184,3 +184,11 @@ FrameBuffer Window::getFrameBuffer() {
     if (impl->bufferIndex < 0) impl->bufferIndex = impl->shmBuffer->acquireFreeBuffer();
     return {impl->getPixels(), impl->width, impl->height, impl->stride};
 }
+
+uint32_t Window::getWidth() const {
+    return impl->width;
+}
+
+uint32_t Window::getHeight() const {
+    return impl->height;
+}

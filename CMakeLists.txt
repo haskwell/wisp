@@ -52,6 +52,10 @@ add_library(wisp
         # Raster
         src/raster/rasterizer.cpp
         src/gfx2d/renderer2d.cpp
+
+        src/gfx3d/renderer3d.cpp
+        src/gfx3d/object3d.cpp
+        src/gfx3d/cube.cpp
 )
 
 target_include_directories(wisp

@@ -3,7 +3,9 @@
 #include <wisp/window.hpp>
 #include <wisp/events.hpp>
 #include <iostream>
-#include "gfx2d/renderer2d.hpp"
+
+#include "gfx3d/cube.hpp"
+#include "gfx3d/renderer3d.hpp"
 void printEvents(wisp::Window& window, const char* name) {
     while (auto event = window.pollEvents()) {
         std::cout << "\n[" << name << "] ";
@@ -78,29 +80,14 @@ void printEvents(wisp::Window& window, const char* name) {
 int main() {
     wisp::Context context;
     wisp::Window window(context, 800, 600, "wisp");
-    wisp::gfx2d::Renderer renderer(window);
+    wisp::gfx3d::Renderer renderer(window, 30, 6);
 
-    Vec2 point(100, 100);
+    const Cube c(2);
     while (window.isOpen()) {
         context.dispatch();
         renderer.beginFrame();
 
-        Vec2 center(400, 300);
-        wisp::Color colors[8] = {
-            wisp::Color::White, wisp::Color::Red, wisp::Color::Green, wisp::Color::Blue,
-            wisp::Color::Yellow, wisp::Color::Cyan, wisp::Color::Magenta, wisp::Color::White
-        };
-
-        const int rays = 32;
-        const float radius = 250.0f;
-        const float pi = 3.14159265f;
-
-        for (int i = 0; i < rays; i++) {
-            float angle = 2.0f * pi * i / rays;
-            float ex = std::round(center.getX() + radius * std::cos(angle));
-            float ey = std::round(center.getY() + radius * std::sin(angle));
-            renderer.drawLine(center, Vec2(ex, ey), colors[i % 8]);
-        }
+        renderer.draw(c, wisp::Color::White);
 
         renderer.endFrame();
     }
